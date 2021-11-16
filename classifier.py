@@ -10,7 +10,7 @@ from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 class CovidDataset(Dataset):
 
     def __init__(self, csv_file):
-        frame = pd.read_csv(csv_file)
+        frame = pd.read_csv(csv_file, encoding='latin-1')
         self.frame = frame
         tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
         self.tweets = frame.iloc[:,4].tolist()
