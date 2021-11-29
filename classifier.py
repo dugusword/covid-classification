@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import os
+import argparse
 import torch
 from torch.utils.data import Dataset
 import pandas as pd
@@ -50,11 +51,24 @@ def compute_metrics(pred):
     }
     
 if __name__ == '__main__':
-    training_set = CovidDataset('Corona_NLP_train.csv')
-    test_set = CovidDataset('Corona_NLP_test.csv')
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('mode', choices=['train', 'eval'])
+    
+    parser.add_argument('--import_model', default='bert-base-uncased')
+    
+    parser.add_argument('--dataset_dir', default='.')
+    parser.add_argument('--output_dir', default='.')
+    
+    args = parser.parse_args()
+    
+    ds_dir = args.dataset_dir
+    training_set = CovidDataset('{}/Corona_NLP_train.csv'.format(ds_dir))
+    test_set = CovidDataset('{}/Corona_NLP_test.csv'.format(ds_dir))
+
     training_set[0]
     training_args = TrainingArguments(
-        output_dir='./results',
+        output_dir='{}/checkpoints'.format(args.output_dir),
         num_train_epochs=3,
         per_device_train_batch_size=16,
         per_device_eval_batch_size=64,
@@ -62,10 +76,10 @@ if __name__ == '__main__':
         weight_decay=0.01,
         evaluation_strategy='steps',
         logging_steps=500,
-        logging_dir='./logs'
+        logging_dir='{}/logs'.format(args.output_dir)
     )
 
-    model = BertForSequenceClassification.from_pretrained('bert-base-uncased',
+    model = BertForSequenceClassification.from_pretrained(args.import_model,
                                                           num_labels=5)
     
     trainer = Trainer(
@@ -76,5 +90,7 @@ if __name__ == '__main__':
         eval_dataset=test_set
     )
 
-    trainer.train()
-    trainer.evaluate()
+    if args.mode == 'train':
+        trainer.train()
+    elif args.mode == 'eval':
+        trainer.evaluate()
