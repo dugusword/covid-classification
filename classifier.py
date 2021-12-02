@@ -11,9 +11,11 @@ from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 class CovidDataset(Dataset):
 
     def __init__(self, csv_file):
+    def __init__(self, csv_file, model):
         frame = pd.read_csv(csv_file, encoding='latin-1')
         self.frame = frame
         tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
+        tokenizer = BertTokenizerFast.from_pretrained(model)
         self.tweets = frame.iloc[:,4].tolist()
         self.tweets = tokenizer(self.tweets, return_tensors='pt', 
                                 padding=True, truncation=True)
@@ -65,6 +67,8 @@ if __name__ == '__main__':
     ds_dir = args.dataset_dir
     training_set = CovidDataset('{}/Corona_NLP_train.csv'.format(ds_dir))
     test_set = CovidDataset('{}/Corona_NLP_test.csv'.format(ds_dir))
+    training_set = CovidDataset('{}/Corona_NLP_train.csv'.format(ds_dir), args.import_model)
+    test_set = CovidDataset('{}/Corona_NLP_test.csv'.format(ds_dir), args.import_model)
 
     training_set[0]
     training_args = TrainingArguments(
