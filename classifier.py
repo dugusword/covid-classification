@@ -40,11 +40,10 @@ class CovidDataset(Dataset):
 
 def load_dataset(csv_file, mode='train', test_size=0.2):
     frame = pd.read_csv(csv_file, encoding='latin-1')
-    
     if mode == 'train':
-        train, test = train_test_split(frame, test_size)
-        train_set = CovidDataset(train)
-        test_set = CovidDataset(test)
+        train_frame, test_frame = train_test_split(frame, test_size=test_size)
+        train_set = CovidDataset(train_frame)
+        test_set = CovidDataset(test_frame)
     else:
         train_set = None
         test_set = CovidDataset(frame)
