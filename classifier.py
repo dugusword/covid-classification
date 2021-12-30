@@ -9,7 +9,7 @@ from transformers import BertTokenizerFast, BertForSequenceClassification
 from transformers import Trainer, TrainingArguments
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from sklearn.model_selection import train_test_split
-import csv
+import csv, json
 
 class CovidDataset(Dataset):
 
@@ -59,9 +59,9 @@ def compute_metrics(pred):
     acc = accuracy_score(labels, preds)
     return {
         'accuracy': acc,
-        'f1': list(f1),
-        'precision': list(precision),
-        'recall': list(recall)
+        'f1': np.mean(f1),
+        'precision': np.mean(precision),
+        'recall': np.mean(recall)
     }
     
 if __name__ == '__main__':
@@ -110,6 +110,10 @@ if __name__ == '__main__':
         #for row in res.predictions:
         #    print(np.argmax(row))
         idx = np.argmax(res.predictions, 1)
+        
+        metrics = compute_metrics(res)
+        with open(args.output_dir + '/score.json', 'w') as f:
+            json.dump(metrics, f)
         
         label_map = { 0: 'Extremely Positive',
                       1: 'Positive',
