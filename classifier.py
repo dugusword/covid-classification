@@ -13,9 +13,9 @@ import csv, json
 
 class CovidDataset(Dataset):
 
-    def __init__(self, frame):
+    def __init__(self, frame, model):
         self.frame = frame
-        tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
+        tokenizer = BertTokenizerFast.from_pretrained(model)
         self.tweets = frame.iloc[:,4].tolist()
         self.tweets = tokenizer(self.tweets, return_tensors='pt', 
                                 padding=True, truncation=True)
@@ -38,15 +38,15 @@ class CovidDataset(Dataset):
 
         return ret
 
-def load_dataset(csv_file, mode='train', test_size=0.2):
+def load_dataset(csv_file, model, mode='train', test_size=0.2):
     frame = pd.read_csv(csv_file, encoding='latin-1')
     if mode == 'train':
         train_frame, test_frame = train_test_split(frame, test_size=test_size)
-        train_set = CovidDataset(train_frame)
-        test_set = CovidDataset(test_frame)
+        train_set = CovidDataset(train_frame, model)
+        test_set = CovidDataset(test_frame, model)
     else:
         train_set = None
-        test_set = CovidDataset(frame)
+        test_set = CovidDataset(frame, model)
     
     return {'train': train_set, 'test': test_set}
 
@@ -76,7 +76,7 @@ if __name__ == '__main__':
     
     args = parser.parse_args()
     ds_path = args.dataset_path
-    dataset = load_dataset(ds_path, args.mode)
+    dataset = load_dataset(ds_path, args.import_model, args.mode)
 
     training_args = TrainingArguments(
         output_dir='{}/checkpoints'.format(args.output_dir),
